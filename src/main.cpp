@@ -1,5 +1,19 @@
 #include <Arduino.h>
 
+template <typename T>
+T clamp(T in, T min, T max)
+{
+  if (in <= min)
+  {
+    return min;
+  }
+  if (in >= max)
+  {
+    return max;
+  }
+  return in;
+}
+
 void setup()
 {
   // f_pwm = f_tck1 / (OCR1C + 1)
@@ -29,7 +43,7 @@ void setup()
   while (true)
   {
     auto inp = pulseIn(0, HIGH);
-    auto nMicros = map(inp, 900, 2000, 500, 2500);
+    auto nMicros = clamp(map(inp, 900, 2000, 500, 2500), 500L, 2500L);
     if (nMicros == 0)
       continue;
     digitalWrite(2, HIGH);
