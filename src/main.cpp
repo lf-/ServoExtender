@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "systemheaders.h"
 
 template <typename T>
 T clamp(T in, T min, T max)
@@ -14,6 +14,12 @@ T clamp(T in, T min, T max)
   return in;
 }
 
+template<typename T>
+T map2(T x, T in_min, T in_max, T out_min, T out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 void setup()
 {
   // f_pwm = f_tck1 / (OCR1C + 1)
@@ -21,7 +27,7 @@ void setup()
   // this is intended to get us about 25KHz pwm frequency
   OCR1C = 159;
 
-  OCR1B = 48; // approximately 30%
+  OCR1B = 70; // approximately 30%
   // see intel spec at https://www.glkinst.com/cables/cable_pics/4_Wire_PWM_Spec.pdf
 
   TCCR1 = 0;         // clear the entire register because we don't know
@@ -36,6 +42,9 @@ void setup()
   }
   PLLCSR |= (1 << PCKE);
 
+  // set pin 4 (PWM) and pin 2 (scaled output) to output
+  DDRB |= (1 << DDB4) | (1 << DDB2);
+
   // turn on PWM on OC1B
   // also set the output mode per 12.2.2 table 12-1
   GTCCR |= (1 << PWM1B) | (1 << COM1B1);
@@ -43,9 +52,9 @@ void setup()
   while (true)
   {
     auto inp = pulseIn(0, HIGH);
-    auto nMicros = clamp(map(inp, 900, 2000, 500, 2500), 500L, 2500L);
-    if (nMicros == 0)
+    if (inp == 0)
       continue;
+    auto nMicros = clamp(map2<float>(inp, 1000.f, 2000.f, 500.f, 2500.f), 500.f, 2500.f);
     digitalWrite(2, HIGH);
     delayMicroseconds(nMicros);
     digitalWrite(2, LOW);
