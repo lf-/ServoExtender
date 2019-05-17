@@ -49,12 +49,17 @@ void setup()
   // also set the output mode per 12.2.2 table 12-1
   GTCCR |= (1 << PWM1B) | (1 << COM1B1);
 
+  // SendOnlySoftwareSerial ss{5};
+  // ss.begin(9600);
+
   while (true)
   {
     auto inp = pulseIn(0, HIGH);
     if (inp == 0)
       continue;
     auto nMicros = clamp(map2<float>(inp, 1000.f, 2000.f, 500.f, 2500.f), 500.f, 2500.f);
+    // ss.println(inp);
+    // ss.println(nMicros);
     digitalWrite(2, HIGH);
     delayMicroseconds(nMicros);
     digitalWrite(2, LOW);
